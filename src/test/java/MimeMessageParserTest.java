@@ -26,5 +26,7 @@ public class MimeMessageParserTest {
                 "1003 - Loan Application_Penny Public-John Homeowner.pdf",
                 "file-example_PDF_1MB.pdf")));
 
+        String htmlContent = exampleMimeMessageParser.getMessages();
+
     }
 }

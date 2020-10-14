@@ -18,7 +18,7 @@ public class ExampleMimeMessageParser extends MimeMessageStreamParser {
             @Override
             public String execute(String fileName, byte[] image, boolean last) throws Exception {
                 writeFile(fileName, image, last);
-                return null;
+                return extractedFileMap.get(fileName).getFile().getAbsolutePath();
             }
         });
 
