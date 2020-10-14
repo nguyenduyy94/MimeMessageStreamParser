@@ -2,7 +2,6 @@ package com.nguyenduyy;
 
 import com.sun.xml.internal.messaging.saaj.packaging.mime.MessagingException;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,8 +29,8 @@ public abstract class MimeMessageStreamParser {
     boolean body = false;
     private final int CHUNK_SIZE = 8 * 256 * 1024; //256KB * 8 = 2MB
     boolean debug = false;
-    OnByteHandlder onReceiveBytes = null;
-    InlineImageHandler inlineImageHandler = null;
+    AttachmentHandler onReceiveBytes = null; // Attachment handler
+    InlineImageHandler inlineImageHandler = null; // Inline Image Handler
     Map<String, String> inlineImagePathMap;
     String emptySubject = "(Empty subject)";
 
@@ -82,9 +81,9 @@ public abstract class MimeMessageStreamParser {
      *  Define how to store current MimeMessage (as file or upload to a Storage, etc) for later retrieving
      * @param in : stream of MimeMessage
      */
-    public abstract void store(InputStream in);
+    public abstract void store(InputStream in) throws Exception;
 
-    public abstract InputStream retrieve();
+    public abstract InputStream retrieve() throws Exception;
 
     public void parse() throws Exception {
         InputStream inputStream = retrieve();
@@ -186,7 +185,7 @@ public abstract class MimeMessageStreamParser {
 
     }
 
-    public void setOnReceiveBytes(OnByteHandlder onReceiveBytes) {
+    public void setOnReceiveBytes(AttachmentHandler onReceiveBytes) {
         this.onReceiveBytes = onReceiveBytes;
     }
 
@@ -225,8 +224,8 @@ public abstract class MimeMessageStreamParser {
         return attachments;
     }
 
-    public interface OnByteHandlder {
-        void execute(byte[] data, int length, Part currentPart) throws Exception;
+    public interface AttachmentHandler {
+        void execute(byte[] data, int length, Part currentPart, boolean last) throws Exception;
     }
 
     public interface InlineImageHandler {
@@ -330,6 +329,7 @@ public abstract class MimeMessageStreamParser {
         }
 
         public String getFileName() {
+            if (fileName == null) fileName = getFileNameFromContentDisposition();
             return fileName;
         }
 
@@ -580,7 +580,7 @@ public abstract class MimeMessageStreamParser {
                 if (onReceiveBytes != null) {
                     byte[] arr = byteBuffer.array();
                     if (arr.length > 0) {
-                        onReceiveBytes.execute(arr, currentSize, part);
+                        onReceiveBytes.execute(arr, currentSize, part, last);
                     }
                 }
 
