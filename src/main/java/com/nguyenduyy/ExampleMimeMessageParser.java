@@ -10,6 +10,10 @@ public class ExampleMimeMessageParser extends MimeMessageStreamParser {
     Map<String, ExtractFile> extractedFileMap = new HashMap<>();
     public ExampleMimeMessageParser(String emailName) {
         super(emailName);
+
+        /*
+         * Register Inline Image handler ***
+         */
         setInlineImageHandler(new InlineImageHandler() {
             @Override
             public String execute(String fileName, byte[] image, boolean last) throws Exception {
@@ -18,6 +22,9 @@ public class ExampleMimeMessageParser extends MimeMessageStreamParser {
             }
         });
 
+        /*
+         * Register Attachment handler ***
+         */
         setOnReceiveBytes(new AttachmentHandler() {
             @Override
             public void execute(byte[] data, int length, Part currentPart, boolean last) throws Exception {
